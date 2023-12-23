@@ -1,4 +1,4 @@
-﻿# LongerFire - *RPH Plugin*
+﻿# MoreFire - *RPH Plugin*
 
 RAGE Plugin Hook Plugin that makes fires burn longer/spread further.
 
