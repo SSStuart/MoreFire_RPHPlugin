@@ -7,8 +7,8 @@
     <ProjectGuid>{474B9684-760F-4782-BAB8-83B2043C4008}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LongerFire</RootNamespace>
-    <AssemblyName>LongerFire</AssemblyName>
+    <RootNamespace>MoreFire</RootNamespace>
+    <AssemblyName>MoreFire</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

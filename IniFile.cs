@@ -11,14 +11,14 @@ namespace SSStuartTools
 
         internal static void LoadSettings()
         {
-            Game.LogTrivial("[LOG]: Loading config file for Longer Fire.");
-            var path = "Plugins/LongerFire.ini";
+            Game.LogTrivial("[LOG]: Loading config file for More Fire.");
+            var path = "Plugins/MoreFire.ini";
             var ini = new InitializationFile(path);
             ini.Create();
-            FIRE_DESIRED_BURN_DURATION = ini.ReadDouble("Fire behavior", "FireDesiredBurnDuration", 0.5);
-            FIRE_SPREAD_RADIUS = ini.ReadDouble("Fire behavior", "FireSpreadRadius", 0.5);
+            FIRE_DESIRED_BURN_DURATION = ini.ReadDouble("Fire behavior", "FireDesiredBurnDuration", 100);
+            FIRE_SPREAD_RADIUS = ini.ReadDouble("Fire behavior", "FireSpreadRadius", 2);
             FIRE_ELAPSED_TIME_INCREMENT_PLAYER = ini.ReadDouble("Fire extinguishing", "FireElapsedTimeIncrementPlayer", 0.5);
-            FIRE_ELAPSED_TIME_INCREMENT_NPC = ini.ReadDouble("Fire extinguishing", "FireElapsedTimeIncrementNPC", 0.5);
+            FIRE_ELAPSED_TIME_INCREMENT_NPC = ini.ReadDouble("Fire extinguishing", "FireElapsedTimeIncrementNPC", 1);
         }
     }
 }
