@@ -1,6 +1,8 @@
-﻿# LongerFire - *RPH Plugin*
+﻿# MoreFire - *RPH Plugin*
 
 RAGE Plugin Hook Plugin that makes fires burn longer/spread further.
+
+The plugin also adds a console command (F4): `RemoveAllFire` which... removes all fires.
 
 ## Configuration
 You can adjust some values in the `.ini` file :
