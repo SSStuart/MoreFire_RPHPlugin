@@ -1,6 +1,6 @@
 ﻿using Rage;
 
-namespace SSStuartTools
+namespace MoreFire
 {
     internal static class Settings
     {
