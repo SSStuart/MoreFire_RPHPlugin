@@ -10,26 +10,25 @@ namespace MoreFire
     public class EntryPoint
     {
         public static string pluginName = "MoreFire";
-        public static string pluginVersion = "v 0.1.0";
+        public static string pluginVersion = "v 0.1.1";
         public static void Main()
         {
-            Game.LogTrivial(pluginName + " loaded.");
+            Game.LogTrivial($"{pluginName} {pluginVersion} loaded.");
 
             Settings.LoadSettings();
-            Game.LogTrivial("[" + pluginName + "] Plugin settings loaded.");
-            Game.LogTrivial("[" + pluginName + "] FIRE_DESIRED_BURN_DURATION : " + Settings.FIRE_DESIRED_BURN_DURATION + " | FIRE_SPREAD_RADIUS : " + Settings.FIRE_SPREAD_RADIUS + " | FIRE_ELAPSED_TIME_INCREMENT_PLAYER : " + Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER + " | -NPC : " + Settings.FIRE_ELAPSED_TIME_INCREMENT_NPC);
+            Game.LogTrivial($"[{pluginName}] Plugin settings loaded.");
+            Game.LogTrivial($"[{pluginName}] FIRE_DESIRED_BURN_DURATION : {Settings.FIRE_DESIRED_BURN_DURATION} | FIRE_SPREAD_RADIUS : {Settings.FIRE_SPREAD_RADIUS} | MAX_FIRES : {Settings.MAX_FIRES} | FIRE_ELAPSED_TIME_INCREMENT_PLAYER : {Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER} | -NPC : {Settings.FIRE_ELAPSED_TIME_INCREMENT_NPC}");
 
             GameFiber.StartNew(delegate
             {
                 List<Entity> closeFirefighters = new List<Entity>();
-                int maxFire = 80;
                 uint lastTick = 0;
 
                 while (true)
                 {
                     GameFiber.Yield();
 
-                    if (Game.GameTime < lastTick + 500 || World.NumberOfFires > maxFire)
+                    if (Game.GameTime < lastTick + 500 || World.NumberOfFires > Settings.MAX_FIRES)
                         continue;
 
                     lastTick = Game.GameTime;
