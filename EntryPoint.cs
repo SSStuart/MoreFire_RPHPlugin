@@ -1,4 +1,5 @@
 ﻿using Rage;
+using System.Collections.Generic;
 using System.Linq;
 
 [assembly: Rage.Attributes.Plugin("MoreFire", Description = "A plugin that makes fires last longer.", Author = "SSStuart")]
@@ -20,66 +21,55 @@ namespace MoreFire
 
             GameFiber.StartNew(delegate
             {
-                Entity[] closeFirefighters = new Entity[0];
-                int nbFirefighters = 0;
+                List<Entity> closeFirefighters = new List<Entity>();
+                int maxFire = 80;
                 uint lastTick = 0;
-
 
                 while (true)
                 {
                     GameFiber.Yield();
 
-                    if (Game.GameTime > lastTick + 500)
+                    if (Game.GameTime < lastTick + 500 || World.NumberOfFires > maxFire)
+                        continue;
+
+                    lastTick = Game.GameTime;
+
+                    Fire[] fires = World.GetAllFires();
+                    closeFirefighters.Clear();
+                    foreach (Fire fire in fires)
                     {
-                        lastTick = Game.GameTime;
-
-                        nbFirefighters = 0;
-                        Fire[] fires = World.GetAllFires();
-                        foreach (Fire fire in fires)
+                        if (fire.DesiredBurnDuration != (float)Settings.FIRE_DESIRED_BURN_DURATION || fire.SpreadRadius != (float)Settings.FIRE_SPREAD_RADIUS)
                         {
-                            if (fire.DesiredBurnDuration != (float)Settings.FIRE_DESIRED_BURN_DURATION || fire.SpreadRadius != (float)Settings.FIRE_SPREAD_RADIUS)
-                            {
-                                fire.DesiredBurnDuration = (float)Settings.FIRE_DESIRED_BURN_DURATION;
-                                fire.SpreadRadius = (float)Settings.FIRE_SPREAD_RADIUS;
-                            }
-
-                            closeFirefighters = World.GetEntities(fire.Position, 2f, GetEntitiesFlags.ConsiderHumanPeds | GetEntitiesFlags.ExcludePlayerPed);
-                            nbFirefighters += closeFirefighters.Count();
+                            fire.DesiredBurnDuration = (float)Settings.FIRE_DESIRED_BURN_DURATION;
+                            fire.SpreadRadius = (float)Settings.FIRE_SPREAD_RADIUS;
                         }
 
-
-                        foreach (Fire fire in fires)
+                        if (Game.LocalPlayer.Character.IsShooting && Game.LocalPlayer.Character.Inventory.EquippedWeapon.Hash == WeaponHash.FireExtinguisher)
                         {
-                            if (Game.LocalPlayer.Character.IsShooting && Game.LocalPlayer.Character.Inventory.EquippedWeapon.Hash == WeaponHash.FireExtinguisher)
+                            float distanceNear = Game.LocalPlayer.Character.GetOffsetPositionFront(1f).DistanceTo2D(fire.Position);
+                            float distanceFar = Game.LocalPlayer.Character.GetOffsetPositionFront(2f).DistanceTo2D(fire.Position);
+                            if (distanceNear < 1f)
                             {
-                                float distanceNear = Game.LocalPlayer.Character.GetOffsetPositionFront(1f).DistanceTo2D(fire.Position);
-                                float distanceFar = Game.LocalPlayer.Character.GetOffsetPositionFront(2f).DistanceTo2D(fire.Position);
-                                if (distanceNear < 1f)
-                                {
-                                    fire.ElapsedBurnDuration += (float)Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER * 2;
-                                    //Rage.Native.NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z, Game.LocalPlayer.Character.Position.X, Game.LocalPlayer.Character.Position.Y, Game.LocalPlayer.Character.Position.Z, 255, 255, 0, 255);
-                                }
-                                else if (distanceFar < 1.5f)
-                                {
-                                    fire.ElapsedBurnDuration += ((float)Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER / 2) * 2;
-                                    //Rage.Native.NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z, Game.LocalPlayer.Character.Position.X, Game.LocalPlayer.Character.Position.Y, Game.LocalPlayer.Character.Position.Z, 255, 255, 0, 50);
-                                }
-
+                                fire.ElapsedBurnDuration += (float)Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER * 2;
+                                //Rage.Native.NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z, Game.LocalPlayer.Character.Position.X, Game.LocalPlayer.Character.Position.Y, Game.LocalPlayer.Character.Position.Z, 255, 255, 0, 255);
                             }
-                            if (nbFirefighters > 0)
+                            else if (distanceFar < 1.5f)
                             {
-                                closeFirefighters = World.GetEntities(fire.Position, 5f, GetEntitiesFlags.ConsiderHumanPeds | GetEntitiesFlags.ExcludePlayerPed);
-                                if (closeFirefighters.Count() > 0)
-                                {
-                                    foreach (Ped firefighter in closeFirefighters)
-                                    {
-                                        if (firefighter.IsAlive && firefighter.Inventory.EquippedWeapon != null && firefighter.Inventory.EquippedWeapon.Hash == WeaponHash.FireExtinguisher && firefighter.IsAiming)
-                                        {
-                                            fire.ElapsedBurnDuration += (float)Settings.FIRE_ELAPSED_TIME_INCREMENT_NPC * 2;
-                                            //Rage.Native.NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z+1, firefighter.Position.X, firefighter.Position.Y, firefighter.Position.Z, 255, 255, 0, 255);
-                                        }
-                                    }
-                                }
+                                fire.ElapsedBurnDuration += ((float)Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER / 2) * 2;
+                                //Rage.Native.NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z, Game.LocalPlayer.Character.Position.X, Game.LocalPlayer.Character.Position.Y, Game.LocalPlayer.Character.Position.Z, 255, 255, 0, 50);
+                            }
+
+                        }
+                        closeFirefighters.AddRange(World.GetEntities(fire.Position, 2f, GetEntitiesFlags.ConsiderHumanPeds | GetEntitiesFlags.ExcludePlayerPed).ToList());
+
+                        if (closeFirefighters.Count == 0)
+                            continue;
+                        foreach (Ped firefighter in closeFirefighters)
+                        {
+                            if (firefighter.IsAlive && firefighter.Inventory.EquippedWeapon != null && firefighter.Inventory.EquippedWeapon.Hash == WeaponHash.FireExtinguisher && firefighter.IsAiming)
+                            {
+                                fire.ElapsedBurnDuration += (float)Settings.FIRE_ELAPSED_TIME_INCREMENT_NPC * 2;
+                                //Rage.Native.NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z+1, firefighter.Position.X, firefighter.Position.Y, firefighter.Position.Z, 255, 255, 0, 255);
                             }
                         }
                     }
