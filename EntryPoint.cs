@@ -1,6 +1,7 @@
 ﻿using Rage;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 [assembly: Rage.Attributes.Plugin("MoreFire", Description = "A plugin that makes fires last longer.", Author = "SSStuart")]
 
@@ -10,10 +11,17 @@ namespace MoreFire
     public class EntryPoint
     {
         public static string pluginName = "MoreFire";
-        public static string pluginVersion = "v 0.1.1";
+        public static string pluginVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         public static void Main()
         {
-            Game.LogTrivial($"{pluginName} {pluginVersion} loaded.");
+            Game.LogTrivial($"{pluginName} v{pluginVersion} loaded.");
+
+            // Check for updates
+            bool updateAvailable = false;
+            System.Threading.Tasks.Task.Run(async () =>
+            {
+                updateAvailable = await UpdateChecker.CheckUpdate();
+            });
 
             Settings.LoadSettings();
             Game.LogTrivial($"[{pluginName}] Plugin settings loaded.");
@@ -27,6 +35,12 @@ namespace MoreFire
                 while (true)
                 {
                     GameFiber.Yield();
+
+                    if (updateAvailable)
+                    {
+                        UpdateChecker.DisplayUpdateNotification();
+                        updateAvailable = false;
+                    }
 
                     if (Game.GameTime < lastTick + 500 || World.NumberOfFires > Settings.MAX_FIRES)
                         continue;
