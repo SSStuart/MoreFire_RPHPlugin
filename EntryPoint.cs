@@ -16,12 +16,7 @@ namespace MoreFire
         {
             Game.LogTrivial($"{pluginName} v{pluginVersion} loaded.");
 
-            // Check for updates
-            bool updateAvailable = false;
-            System.Threading.Tasks.Task.Run(async () =>
-            {
-                updateAvailable = await UpdateChecker.CheckUpdate();
-            });
+            UpdateChecker.CheckForUpdates();
 
             Settings.LoadSettings();
             Game.LogTrivial($"[{pluginName}] Plugin settings loaded.");
@@ -35,12 +30,6 @@ namespace MoreFire
                 while (true)
                 {
                     GameFiber.Yield();
-
-                    if (updateAvailable)
-                    {
-                        UpdateChecker.DisplayUpdateNotification();
-                        updateAvailable = false;
-                    }
 
                     if (Game.GameTime < lastTick + 500 || World.NumberOfFires > Settings.MAX_FIRES)
                         continue;
