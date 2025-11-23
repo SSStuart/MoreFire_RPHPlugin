@@ -30,6 +30,7 @@ namespace MoreFire
                 while (true)
                 {
                     GameFiber.Wait(0);
+                    Game.LocalPlayer.Character.IsFireProof = Settings.PLAYER_FIRE_PROOF || Game.LocalPlayer.Character.IsFireProof;
 
                     if (Game.GameTime < lastTick + 500)
                         continue;
@@ -40,7 +41,7 @@ namespace MoreFire
                     closeFirefighters.Clear();
                     foreach (Fire fire in fires)
                     {
-                        if ((fire.DesiredBurnDuration != (float)Settings.FIRE_DESIRED_BURN_DURATION || fire.SpreadRadius != (float)Settings.FIRE_SPREAD_RADIUS) && World.NumberOfFires > Settings.MAX_FIRES)
+                        if ((fire.DesiredBurnDuration != (float)Settings.FIRE_DESIRED_BURN_DURATION || fire.SpreadRadius != (float)Settings.FIRE_SPREAD_RADIUS) && World.NumberOfFires <= Settings.MAX_FIRES)
                         {
                             fire.DesiredBurnDuration = (float)Settings.FIRE_DESIRED_BURN_DURATION;
                             fire.SpreadRadius = (float)Settings.FIRE_SPREAD_RADIUS;
@@ -48,14 +49,14 @@ namespace MoreFire
 
                         if (Game.LocalPlayer.Character.IsShooting && Game.LocalPlayer.Character.Inventory.EquippedWeapon.Hash == WeaponHash.FireExtinguisher)
                         {
-                            float distanceNear = Game.LocalPlayer.Character.GetOffsetPositionFront(1f).DistanceTo2D(fire.Position);
-                            float distanceFar = Game.LocalPlayer.Character.GetOffsetPositionFront(2f).DistanceTo2D(fire.Position);
+                            float distanceNear = DistanceSquared2D(Game.LocalPlayer.Character.GetOffsetPositionFront(1f), fire.Position);
+                            float distanceFar = DistanceSquared2D(Game.LocalPlayer.Character.GetOffsetPositionFront(2f), fire.Position);
                             if (distanceNear < 1f)
                             {
                                 fire.ElapsedBurnDuration += (float)Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER * 2;
                                 //NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z, Game.LocalPlayer.Character.Position.X, Game.LocalPlayer.Character.Position.Y, Game.LocalPlayer.Character.Position.Z, 255, 255, 0, 255);
                             }
-                            else if (distanceFar < 1.5f)
+                            else if (distanceFar < (1.5f * 1.5))
                             {
                                 fire.ElapsedBurnDuration += ((float)Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER / 2) * 2;
                                 //NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z, Game.LocalPlayer.Character.Position.X, Game.LocalPlayer.Character.Position.Y, Game.LocalPlayer.Character.Position.Z, 255, 255, 0, 50);
@@ -85,6 +86,13 @@ namespace MoreFire
                     }
                 }
             });
+        }
+
+        private static float DistanceSquared2D(Vector3 pos1, Vector3 pos2)
+        {
+            float distX = pos1.X - pos2.X;
+            float distY = pos1.Y - pos2.Y;
+            return distX * distX + distY * distY;
         }
     }
 

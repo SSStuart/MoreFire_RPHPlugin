@@ -12,6 +12,10 @@ You can adjust some values in the `.ini` file :
 - ⭕ The radius of fire propagation (how *fast* it spreads)
 - 🔥 The max number of fires that can be active at once
 - 🧯 The time required to extinguish it with a fire extinguisher (for player and NPCs)
+- ⛑ If the player is fire proof
+
+## Known issues
+- Water hoses on trucks are not effective.
 
 ![Overview screenshot](example.png)
 
