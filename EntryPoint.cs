@@ -1,6 +1,5 @@
-﻿using Rage;
-using Rage.Native;
-using System.Collections.Generic;
+﻿using DeleteThatEntity;
+using Rage;
 using System.Linq;
 using System.Reflection;
 
@@ -13,6 +12,7 @@ namespace MoreFire
     {
         public static string pluginName = "MoreFire";
         public static string pluginVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        public static Localization l10n = new Localization();
 
         public static void Main()
         {
@@ -24,7 +24,6 @@ namespace MoreFire
 
             GameFiber.StartNew(delegate
             {
-                List<Entity> closeFirefighters = new List<Entity>();
                 uint lastTick = 0;
 
                 while (true)
@@ -38,7 +37,6 @@ namespace MoreFire
                     lastTick = Game.GameTime;
 
                     Fire[] fires = World.GetAllFires();
-                    closeFirefighters.Clear();
                     foreach (Fire fire in fires)
                     {
                         if ((fire.DesiredBurnDuration != (float)Settings.FIRE_DESIRED_BURN_DURATION || fire.SpreadRadius != (float)Settings.FIRE_SPREAD_RADIUS) && World.NumberOfFires <= Settings.MAX_FIRES)
@@ -71,17 +69,6 @@ namespace MoreFire
                         {
                             fire.ElapsedBurnDuration += (float)Settings.FIRE_ELAPSED_TIME_INCREMENT_NPC * 2f;
                             //NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z+1, firefighter.Position.X, firefighter.Position.Y, firefighter.Position.Z, 255, 255, 0, 255);
-                        }
-
-                        if (closeFirefighters.Count == 0)
-                            continue;
-                        foreach (Ped firefighter in closeFirefighters)
-                        {
-                            if (firefighter.IsAlive && firefighter.Inventory.EquippedWeapon != null && firefighter.Inventory.EquippedWeapon.Hash == WeaponHash.FireExtinguisher && firefighter.IsAiming)
-                                {
-                                fire.ElapsedBurnDuration += (float)Settings.FIRE_ELAPSED_TIME_INCREMENT_NPC * 2;
-                                //Rage.Native.NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z+1, firefighter.Position.X, firefighter.Position.Y, firefighter.Position.Z, 255, 255, 0, 255);
-                            }
                         }
                     }
                 }
