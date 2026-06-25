@@ -10,7 +10,8 @@ Available on [gta5-mods.com](https://www.gta5-mods.com/scripts/more-fire) and [l
 You can adjust some values in the `.ini` file :
 - ⏱ How long the fire will burn
 - ⭕ The radius of fire propagation (how *fast* it spreads)
-- 🔥 The max number of fires that can be active at once
+- 🔥 If the number of fires depends on the rendering time of a frame
+- 🔥 ...The max number of fires that can be active at once otherwise
 - 🧯 The time required to extinguish it with a fire extinguisher (for player and NPCs)
 - ⛑ If the player is fire proof
 
