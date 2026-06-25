@@ -6,6 +6,7 @@ namespace MoreFire
     {
         internal static double FIRE_DESIRED_BURN_DURATION = 100;
         internal static double FIRE_SPREAD_RADIUS = 2;
+        internal static bool AUTO_MAX_FIRES = false;
         internal static double MAX_FIRES = 80;
         internal static double FIRE_ELAPSED_TIME_INCREMENT_PLAYER = 0.5;
         internal static double FIRE_ELAPSED_TIME_INCREMENT_NPC = 1;
@@ -13,15 +14,17 @@ namespace MoreFire
 
         internal static void LoadSettings()
         {
-            Game.LogTrivial("Loading plugin settings" );
+            Game.LogTrivial("Loading plugin settings");
             var path = "Plugins/MoreFire.ini";
             var ini = new InitializationFile(path);
             ini.Create();
-            
+
             FIRE_DESIRED_BURN_DURATION = ini.ReadDouble("Fire behavior", "FireDesiredBurnDuration", 100);
             Game.LogTrivial($"- Fire desired burn duration: {FIRE_DESIRED_BURN_DURATION}");
             FIRE_SPREAD_RADIUS = ini.ReadDouble("Fire behavior", "FireSpreadRadius", 2);
             Game.LogTrivial($"- Fire spread radius: {FIRE_SPREAD_RADIUS}");
+            AUTO_MAX_FIRES = ini.ReadBoolean("Fire behavior", "AutoMaxFires", false);
+            Game.LogTrivial($"- Auto max fires: {(AUTO_MAX_FIRES ? "Yes" : "No")}");
             MAX_FIRES = ini.ReadInt16("Fire behavior", "MaxFires", 80);
             Game.LogTrivial($"- Max fires: {MAX_FIRES}");
 

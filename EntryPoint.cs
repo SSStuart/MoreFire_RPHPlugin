@@ -24,27 +24,30 @@ namespace MoreFire
 
             GameFiber.StartNew(delegate
             {
-                uint lastTick = 0;
-
                 while (true)
                 {
-                    GameFiber.Wait(0);
+                    GameFiber.Wait(500);
                     Game.LocalPlayer.Character.IsFireProof = Settings.PLAYER_FIRE_PROOF || Game.LocalPlayer.Character.IsFireProof;
-
-                    if (Game.GameTime < lastTick + 500)
-                        continue;
-
-                    lastTick = Game.GameTime;
 
                     Fire[] fires = World.GetAllFires();
                     foreach (Fire fire in fires)
                     {
-                        if ((fire.DesiredBurnDuration != (float)Settings.FIRE_DESIRED_BURN_DURATION || fire.SpreadRadius != (float)Settings.FIRE_SPREAD_RADIUS) && World.NumberOfFires <= Settings.MAX_FIRES)
+                        // If the “Auto max fires” setting is enabled and the frame time exceeds 30 ms,
+                        // or if the “Max fires” limit is reached, the fire progression is stopped.
+                        if ((Settings.AUTO_MAX_FIRES && Game.FrameTime > 0.03)
+                            || (!Settings.AUTO_MAX_FIRES && World.NumberOfFires > Settings.MAX_FIRES))
+                        {
+                            fire.DesiredBurnDuration = 1;
+                            fire.SpreadRadius = 0f;
+                        }
+                        // ...Otherwise, define the properties of the fire
+                        else if (fire.DesiredBurnDuration != (float)Settings.FIRE_DESIRED_BURN_DURATION || fire.SpreadRadius != (float)Settings.FIRE_SPREAD_RADIUS)
                         {
                             fire.DesiredBurnDuration = (float)Settings.FIRE_DESIRED_BURN_DURATION;
                             fire.SpreadRadius = (float)Settings.FIRE_SPREAD_RADIUS;
                         }
 
+                        // Player's fire extinguisher logic
                         if (Game.LocalPlayer.Character.IsShooting && Game.LocalPlayer.Character.Inventory.EquippedWeapon.Hash == WeaponHash.FireExtinguisher)
                         {
                             float distanceNear = DistanceSquared2D(Game.LocalPlayer.Character.GetOffsetPositionFront(1f), fire.Position);
@@ -61,6 +64,7 @@ namespace MoreFire
                             }
 
                         }
+                        // Firefighters fire extinguisher logic
                         var firefighters = World.GetEntities(fire.Position, 3f, GetEntitiesFlags.ConsiderHumanPeds | GetEntitiesFlags.ExcludePlayerPed)
                            .OfType<Ped>()
                            .Where(ped => ped.IsAlive && ped.Inventory.EquippedWeapon?.Hash == WeaponHash.FireExtinguisher && ped.IsAiming);
@@ -83,9 +87,9 @@ namespace MoreFire
         }
     }
 
-    public static class DeleteAllFireCommand
+    public static class RemoveAllFireCommand
     {
-        [Rage.Attributes.ConsoleCommand]
+        [Rage.Attributes.ConsoleCommand(Description = "Extinguish all the fires")]
         public static void Command_RemoveAllFire()
         {
             Fire[] fire = World.GetAllFires();

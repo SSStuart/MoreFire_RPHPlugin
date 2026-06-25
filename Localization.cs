@@ -10,7 +10,7 @@ namespace DeleteThatEntity
         private readonly Dictionary<string, Dictionary<string, string>> strings = new Dictionary<string, Dictionary<string, string>>
         {
             {"en",
-                new Dictionary<string, string>{ 
+                new Dictionary<string, string>{
                     { "updateAvailable", "~y~Update available!" },
                 }
             },
