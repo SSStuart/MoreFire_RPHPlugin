@@ -13,10 +13,11 @@ You can adjust some values in the `.ini` file :
 - 🔥 If the number of fires depends on the rendering time of a frame
 - 🔥 ...The max number of fires that can be active at once otherwise
 - 🧯 The time required to extinguish it with a fire extinguisher (for player and NPCs)
+- 🚒 The radius of the effect produced by fire trucks (customizable vehicle list): fires will stop spreading in this radius around the vehicles (temporary workaround for water cannons)
 - ⛑ If the player is fire proof
 
 ## Known issues
-- Water hoses on trucks are not effective.
+- Water hoses on trucks are not effective (Added the fire truck effect as a temporary workaround).
 
 ![Overview screenshot](example.png)
 

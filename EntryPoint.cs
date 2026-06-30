@@ -1,5 +1,6 @@
 ﻿using DeleteThatEntity;
 using Rage;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -24,10 +25,17 @@ namespace MoreFire
 
             GameFiber.StartNew(delegate
             {
+                int firetruckCheck = 0;
+                List<Entity> firetrucks = new List<Entity>();
+
                 while (true)
                 {
                     GameFiber.Wait(500);
                     Game.LocalPlayer.Character.IsFireProof = Settings.PLAYER_FIRE_PROOF || Game.LocalPlayer.Character.IsFireProof;
+
+                    // Update the fire truck vehicle list every 8 iterations (=4s)
+                    if (firetruckCheck == 0)
+                        firetrucks = World.GetEntities(Game.LocalPlayer.Character.Position, 50, GetEntitiesFlags.ConsiderGroundVehicles | GetEntitiesFlags.ExcludeEmptyVehicles).Where(ent => Settings.FIRETRUCK_MODELS.Contains(ent.Model.Name)).ToList();
 
                     Fire[] fires = World.GetAllFires();
                     foreach (Fire fire in fires)
@@ -37,7 +45,6 @@ namespace MoreFire
                         if ((Settings.AUTO_MAX_FIRES && Game.FrameTime > 0.03)
                             || (!Settings.AUTO_MAX_FIRES && World.NumberOfFires > Settings.MAX_FIRES))
                         {
-                            fire.DesiredBurnDuration = 1;
                             fire.SpreadRadius = 0f;
                         }
                         // ...Otherwise, define the properties of the fire
@@ -45,6 +52,16 @@ namespace MoreFire
                         {
                             fire.DesiredBurnDuration = (float)Settings.FIRE_DESIRED_BURN_DURATION;
                             fire.SpreadRadius = (float)Settings.FIRE_SPREAD_RADIUS;
+
+                            // If fire in radius of a fire truck : stop fire spreading, and decrease remaining burn duration
+                            foreach (Entity firetruck in firetrucks)
+                            {
+                                if (firetruck.Exists() && DistanceSquared2D(firetruck.Position, fire.Position) < Settings.FIRETRUCK_EFFECT_RADIUS * Settings.FIRETRUCK_EFFECT_RADIUS)
+                                {
+                                    fire.SpreadRadius = 0;
+                                    fire.ElapsedBurnDuration += 1f;
+                                }
+                            }
                         }
 
                         // Player's fire extinguisher logic
@@ -59,7 +76,7 @@ namespace MoreFire
                             }
                             else if (distanceFar < (1.5f * 1.5))
                             {
-                                fire.ElapsedBurnDuration += ((float)Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER / 2) * 2;
+                                fire.ElapsedBurnDuration += (float)Settings.FIRE_ELAPSED_TIME_INCREMENT_PLAYER;
                                 //NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z, Game.LocalPlayer.Character.Position.X, Game.LocalPlayer.Character.Position.Y, Game.LocalPlayer.Character.Position.Z, 255, 255, 0, 50);
                             }
 
@@ -75,6 +92,8 @@ namespace MoreFire
                             //NativeFunction.Natives.DRAW_LINE(fire.Position.X, fire.Position.Y, fire.Position.Z+1, firefighter.Position.X, firefighter.Position.Y, firefighter.Position.Z, 255, 255, 0, 255);
                         }
                     }
+
+                    firetruckCheck = (firetruckCheck + 1) % 8;
                 }
             });
         }
