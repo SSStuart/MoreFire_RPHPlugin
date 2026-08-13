@@ -37,9 +37,12 @@ namespace MoreFire
                     if (firetruckCheck == 0)
                         firetrucks = World.GetEntities(Game.LocalPlayer.Character.Position, 50, GetEntitiesFlags.ConsiderGroundVehicles | GetEntitiesFlags.ExcludeEmptyVehicles).Where(ent => Settings.FIRETRUCK_MODELS.Contains(ent.Model.Name)).ToList();
 
-                    Fire[] fires = World.GetAllFires();
+                    Fire[] fires = World.GetAllFires().Where(fire => fire.ParentEntity?.GetType().Name != "Ped").ToArray();
                     foreach (Fire fire in fires)
                     {
+                        GameFiber.Sleep(5);
+                        if (!fire.Exists())
+                            continue;
                         // If the “Auto max fires” setting is enabled and the frame time exceeds 30 ms,
                         // or if the “Max fires” limit is reached, the fire progression is stopped.
                         if ((Settings.AUTO_MAX_FIRES && Game.FrameTime > 0.03)
